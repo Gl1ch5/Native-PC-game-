@@ -26,7 +26,29 @@ if [ ! -d "$WORK/.git" ]; then
 fi
 GIT_LFS_SKIP_SMUDGE=1 git -C "$WORK" fetch -q --depth 1 origin "$UPSTREAM_COMMIT"
 git -C "$WORK" checkout -q --force FETCH_HEAD
-git -C "$WORK" clean -qfdx -e app/src/main/assets/imagefs.txz -e 'app/src/main/assets/proton-*.txz'
+git -C "$WORK" clean -qfdx -e app/src/main/assets/imagefs.txz -e 'app/src/main/assets/proton-*.txz' -e app/src/main/cpp/OpenXR-SDK -e app/src/main/cpp/sdl2
+
+# Native submodules (not fetched by a plain checkout).
+CPP="$WORK/app/src/main/cpp"
+oxr_commit="$(git -C "$WORK" ls-tree HEAD app/src/main/cpp/OpenXR-SDK | awk '{print $3}')"
+if [ -n "$oxr_commit" ] && [ ! -f "$CPP/OpenXR-SDK/CMakeLists.txt" ]; then
+    echo "Fetching OpenXR-SDK $oxr_commit"
+    rm -rf "$CPP/OpenXR-SDK" && mkdir -p "$CPP/OpenXR-SDK"
+    git -C "$CPP/OpenXR-SDK" init -q
+    git -C "$CPP/OpenXR-SDK" fetch -q --depth 1 https://github.com/KhronosGroup/OpenXR-SDK "$oxr_commit"
+    git -C "$CPP/OpenXR-SDK" checkout -q FETCH_HEAD
+fi
+if [ ! -f "$CPP/sdl2/CMakeLists.txt" ]; then
+    echo "Creating header-only SDL2 ($SDL2_TAG)"
+    tmp_sdl="$(mktemp -d)"
+    git -C "$tmp_sdl" init -q
+    git -C "$tmp_sdl" fetch -q --depth 1 "$SDL2_REPO" "refs/tags/$SDL2_TAG"
+    git -C "$tmp_sdl" checkout -q FETCH_HEAD
+    rm -rf "$CPP/sdl2" && mkdir -p "$CPP/sdl2/include/SDL2"
+    cp "$tmp_sdl"/include/*.h "$CPP/sdl2/include/SDL2/"
+    printf 'add_library(SDL2 INTERFACE)\ntarget_include_directories(SDL2 INTERFACE "${CMAKE_CURRENT_LIST_DIR}/include" "${CMAKE_CURRENT_LIST_DIR}/include/SDL2")\n' > "$CPP/sdl2/CMakeLists.txt"
+    rm -rf "$tmp_sdl"
+fi
 
 for patch in "$ROOT"/android/patches/*.patch; do
     echo "Applying $(basename "$patch")"
