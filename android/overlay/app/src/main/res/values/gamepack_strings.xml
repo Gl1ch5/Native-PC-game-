@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="gamepack_channel_name">Установка игры</string>
+    <string name="gamepack_play">Играть</string>
+    <string name="gamepack_install">Установить</string>
+    <string name="gamepack_retry">Повторить</string>
+    <string name="gamepack_cancel">Отмена</string>
+    <string name="gamepack_cancelled">Установка отменена</string>
+    <string name="gamepack_settings">Настройки</string>
+    <string name="gamepack_done">Готово</string>
+    <string name="gamepack_ready">Игра установлена и готова к запуску</string>
+    <string name="gamepack_starting">Запуск…</string>
+    <string name="gamepack_not_installed">Игра ещё не установлена. Понадобится Wi‑Fi и около 16 ГБ свободного места.</string>
+
+    <string name="gamepack_stage_system">Подготовка движка…</string>
+    <string name="gamepack_stage_container">Настройка окружения…</string>
+    <string name="gamepack_stage_download">Загрузка</string>
+    <string name="gamepack_stage_verify">Проверка файлов</string>
+    <string name="gamepack_stage_extract">Распаковка</string>
+
+    <string name="gamepack_error_prefix">Ошибка: %1$s</string>
+    <string name="gamepack_error_config">Ошибка конфигурации: %1$s</string>
+    <string name="gamepack_error_system">не удалось подготовить системные файлы</string>
+    <string name="gamepack_error_container">не удалось создать окружение игры</string>
+    <string name="gamepack_error_checksum">файл %1$s повреждён, он будет скачан заново</string>
+    <string name="gamepack_error_exe">в архиве не найден %1$s</string>
+    <string name="gamepack_error_space">нужно %1$.1f ГБ свободного места, доступно %2$.1f ГБ</string>
+
+    <string name="gamepack_setup_title_first">Добро пожаловать</string>
+    <string name="gamepack_setup_hint">Выберите управление и качество. Всё это можно поменять позже.</string>
+    <string name="gamepack_controls">Управление</string>
+    <string name="gamepack_controls_gamepad">Геймпад</string>
+    <string name="gamepack_controls_touch">Сенсорное</string>
+    <string name="gamepack_controls_tilt">Гироскоп\n(наклон)</string>
+    <string name="gamepack_controls_keyboard">Клавиатура</string>
+    <string name="gamepack_tilt_sensitivity">Чувствительность руля</string>
+    <string name="gamepack_tilt_calibrate">Центр</string>
+    <string name="gamepack_tilt_calibrated">Текущее положение — центр руля</string>
+    <string name="gamepack_quality">Качество</string>
+    <string name="gamepack_quality_eco">Экономия\n720p · 45 FPS</string>
+    <string name="gamepack_quality_balanced">Баланс\n720p · 60 FPS</string>
+    <string name="gamepack_quality_high">Качество\n1080p · 60 FPS</string>
+    <string name="gamepack_show_fps">Показывать счётчик FPS</string>
+
+    <string name="gamepack_paused">Пауза</string>
+    <string name="gamepack_resume">Продолжить</string>
+    <string name="gamepack_exit">Выйти</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="gamepack_accent">#E10600</color>
+    <color name="gamepack_accent_dark">#A30400</color>
+    <color name="gamepack_bg">#0B0B0F</color>
+    <color name="gamepack_panel">#E6141419</color>
+    <color name="gamepack_card">#1F1F27</color>
+    <color name="gamepack_card_stroke">#33FFFFFF</color>
+    <color name="gamepack_text">#FFFFFF</color>
+    <color name="gamepack_text_dim">#B3FFFFFF</color>
+</resources>

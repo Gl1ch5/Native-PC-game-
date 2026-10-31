@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="560dp"
+    android:layout_height="match_parent"
+    android:layout_marginTop="16dp"
+    android:layout_marginBottom="16dp"
+    android:background="@drawable/gamepack_panel"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+
+        <TextView
+            android:id="@+id/GPSetupTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/gamepack_text"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:text="@string/gamepack_setup_hint"
+            android:textColor="@color/gamepack_text_dim"
+            android:textSize="13sp" />
+
+        <include layout="@layout/gamepack_controls_section" />
+
+        <TextView
+            style="@style/GamePackSection"
+            android:text="@string/gamepack_quality" />
+
+        <RadioGroup
+            android:id="@+id/GPQualityGroup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/GPQualityEco"
+                style="@style/GamePackOption"
+                android:text="@string/gamepack_quality_eco" />
+
+            <RadioButton
+                android:id="@+id/GPQualityBalanced"
+                style="@style/GamePackOption"
+                android:text="@string/gamepack_quality_balanced" />
+
+            <RadioButton
+                android:id="@+id/GPQualityHigh"
+                style="@style/GamePackOption"
+                android:text="@string/gamepack_quality_high" />
+        </RadioGroup>
+
+        <androidx.appcompat.widget.SwitchCompat
+            android:id="@+id/GPShowFps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:text="@string/gamepack_show_fps"
+            android:textColor="@color/gamepack_text"
+            android:textSize="14sp" />
+
+        <Button
+            android:id="@+id/GPSetupDone"
+            style="@style/GamePackButton"
+            android:layout_width="match_parent"
+            android:layout_marginTop="20dp"
+            android:text="@string/gamepack_done" />
+    </LinearLayout>
+</ScrollView>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Placeholder background, used when games/<id>/branding/background.jpg is absent. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape><gradient android:angle="315" android:startColor="#1A0B0B0F" android:centerColor="#2A1416" android:endColor="#0B0B0F" /></shape>
+    </item>
+    <item android:gravity="end|center_vertical" android:width="420dp" android:height="420dp" android:right="-80dp">
+        <shape android:shape="oval"><gradient android:type="radial" android:gradientRadius="210dp" android:startColor="#66E10600" android:endColor="#00E10600" /></shape>
+    </item>
+</layer-list>

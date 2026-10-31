@@ -1,0 +1,187 @@
+diff --git a/app/build.gradle b/app/build.gradle
+index f44dc6e..e08aa39 100644
+--- a/app/build.gradle
++++ b/app/build.gradle
+@@ -87,6 +87,7 @@ dependencies {
+     implementation 'com.github.luben:zstd-jni:1.5.2-3@aar'
+     implementation 'org.tukaani:xz:1.7'
+     implementation 'org.apache.commons:commons-compress:1.20'
++    implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.03'
+     implementation 'androidx.activity:activity-ktx:1.4.0'
+     implementation 'androidx.fragment:fragment-ktx:1.4.0'
+     implementation files('libs/MidiSynth/MidiSynth.jar')
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index 8d1fd79..eee388e 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -38,9 +38,9 @@
+     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+ 
+     <application
+-        android:label="Winlator Cmod"
+-        android:icon="@mipmap/ic_launcher"
+-        android:roundIcon="@mipmap/ic_launcher_round"
++        android:label="@string/gamepack_app_name"
++        android:icon="@mipmap/gamepack_ic_launcher"
++        android:roundIcon="@mipmap/gamepack_ic_launcher"
+         android:theme="@style/AppTheme"
+         android:appCategory="game"
+         android:isGame="true"
+@@ -57,12 +57,26 @@
+             android:screenOrientation="sensor"
+             android:exported="true"
+             android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|density|navigation">
++        </activity>
++
++        <!-- Game-pack launcher: the only home-screen entry point -->
++        <activity
++            android:name="com.winlator.cmod.gamepack.GameLauncherActivity"
++            android:theme="@style/GamePackTheme"
++            android:screenOrientation="sensorLandscape"
++            android:launchMode="singleTask"
++            android:exported="true"
++            android:configChanges="keyboard|keyboardHidden|orientation|screenSize|screenLayout|smallestScreenSize|density|navigation">
+             <intent-filter>
+                 <action android:name="android.intent.action.MAIN"/>
+                 <category android:name="android.intent.category.LAUNCHER"/>
+             </intent-filter>
+         </activity>
+ 
++        <service
++            android:name="com.winlator.cmod.gamepack.GamePackInstallService"
++            android:exported="false" />
++
+         <activity
+             android:name="com.winlator.cmod.BigPictureActivity"
+             android:theme="@style/Theme.AppCompat"
+diff --git a/app/src/main/java/com/winlator/cmod/XServerDisplayActivity.java b/app/src/main/java/com/winlator/cmod/XServerDisplayActivity.java
+index e155323..e2e64fb 100644
+--- a/app/src/main/java/com/winlator/cmod/XServerDisplayActivity.java
++++ b/app/src/main/java/com/winlator/cmod/XServerDisplayActivity.java
+@@ -213,6 +213,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
+     // Inside the XServerDisplayActivity class
+     private SensorManager sensorManager;
+     private Sensor gyroSensor;
++    private com.winlator.cmod.gamepack.GameOverlay gameOverlay;
+     private ExternalController controller;
+ 
+     // Playtime stats tracking
+@@ -903,6 +904,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
+         startTime = System.currentTimeMillis();
+         handler.postDelayed(savePlaytimeRunnable, SAVE_INTERVAL_MS);
+         ProcessHelper.resumeAllWineProcesses();
++        if (gameOverlay != null) gameOverlay.onResume();
+     }
+ 
+     @Override
+@@ -927,6 +929,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
+         savePlaytimeData();
+         handler.removeCallbacks(savePlaytimeRunnable);
+         ProcessHelper.pauseAllWineProcesses();
++        if (gameOverlay != null) gameOverlay.onPause();
+     }
+ 
+ 
+@@ -1021,6 +1024,11 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
+ 
+     @Override
+     public void onBackPressed() {
++        if (environment != null && gameOverlay != null) {
++            releasePointerCaptureIfNeeded("gamepack-menu/back");
++            gameOverlay.toggleMenu();
++            return;
++        }
+         if (environment != null) {
+             releasePointerCaptureIfNeeded("open-drawer/back");
+             if (!drawerLayout.isDrawerOpen(GravityCompat.START)) {
+@@ -1939,6 +1947,8 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
+ 
+             String simTouchScreen = shortcut.getExtra("simTouchScreen");
+             touchpadView.setSimTouchScreen(simTouchScreen.equals("1"));
++
++            if (!shortcut.getExtra("gamepack").isEmpty()) gameOverlay = new com.winlator.cmod.gamepack.GameOverlay(this);
+         }
+ 
+         AppUtils.observeSoftKeyboardVisibility(drawerLayout, renderer::setScreenOffsetYRelativeToCursor);
+@@ -2170,7 +2180,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
+         }
+     }
+ 
+-    private void showInputControls(ControlsProfile profile) {
++    public void showInputControls(ControlsProfile profile) {
+         inputControlsView.setVisibility(View.VISIBLE);
+         inputControlsView.requestFocus();
+         inputControlsView.setProfile(profile);
+@@ -2194,7 +2204,7 @@ public class XServerDisplayActivity extends AppCompatActivity implements Navigat
+         }
+     }
+ 
+-    private void hideInputControls() {
++    public void hideInputControls() {
+         inputControlsView.setShowTouchscreenControls(true);
+         inputControlsView.setVisibility(View.GONE);
+         inputControlsView.setProfile(null);
+diff --git a/app/src/main/java/com/winlator/cmod/xenvironment/ImageFsInstaller.java b/app/src/main/java/com/winlator/cmod/xenvironment/ImageFsInstaller.java
+index 633076e..d208a66 100644
+--- a/app/src/main/java/com/winlator/cmod/xenvironment/ImageFsInstaller.java
++++ b/app/src/main/java/com/winlator/cmod/xenvironment/ImageFsInstaller.java
+@@ -140,6 +140,47 @@ public abstract class ImageFsInstaller {
+         });
+     }
+ 
++    public static boolean needsInstall(Context context) {
++        ImageFs imageFs = ImageFs.find(context);
++        return !imageFs.isValid() || imageFs.getVersion() < LATEST_VERSION;
++    }
++
++    /** Installs the system image without any UI, for the game-pack launcher. Call from a worker thread. */
++    public static boolean installFromAssetsBlocking(Context context, com.winlator.cmod.core.Callback<Integer> onProgress) {
++        ImageFs imageFs = ImageFs.find(context);
++        File rootDir = imageFs.getRootDir();
++
++        androidx.preference.PreferenceManager.getDefaultSharedPreferences(context).edit()
++                .remove("current_box64_version")
++                .remove("current_wowbox64_version")
++                .remove("current_fexcore_version")
++                .apply();
++
++        clearRootDir(rootDir);
++        final byte compressionRatio = 24;
++        final long contentLength = (long)(FileUtils.getSize(context, "imagefs.txz") * (100.0f / compressionRatio));
++        AtomicLong totalSizeRef = new AtomicLong();
++
++        boolean success = TarCompressorUtils.extract(TarCompressorUtils.Type.XZ, context, "imagefs.txz", rootDir, (file, size) -> {
++            if (size > 0 && onProgress != null) {
++                long totalSize = totalSizeRef.addAndGet(size);
++                onProgress.call(Math.min(100, (int)(((float)totalSize / contentLength) * 100)));
++            }
++            return file;
++        });
++
++        if (success) {
++            for (String version : context.getResources().getStringArray(R.array.wine_entries)) {
++                File outFile = new File(rootDir, "/opt/" + version);
++                outFile.mkdirs();
++                TarCompressorUtils.extract(TarCompressorUtils.Type.XZ, context, version + ".txz", outFile);
++            }
++            imageFs.createImgVersionFile(LATEST_VERSION);
++            resetContainerImgVersions(context);
++        }
++        return success;
++    }
++
+     public static void installIfNeeded(final MainActivity activity) {
+         ImageFs imageFs = ImageFs.find(activity);
+         if (!imageFs.isValid() || imageFs.getVersion() < LATEST_VERSION) installFromAssets(activity);
+diff --git a/settings.gradle b/settings.gradle
+index 32640e4..5f5d5a1 100644
+--- a/settings.gradle
++++ b/settings.gradle
+@@ -16,6 +16,7 @@ dependencyResolutionManagement {
+     repositories {
+         google()
+         mavenCentral()
++        maven { url 'https://jitpack.io' }
+     }
+ }
+ 

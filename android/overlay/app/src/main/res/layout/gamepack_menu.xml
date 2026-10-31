@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="560dp"
+    android:layout_height="wrap_content"
+    android:background="@drawable/gamepack_panel"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <View
+            android:layout_width="4dp"
+            android:layout_height="28dp"
+            android:layout_marginEnd="12dp"
+            android:background="@drawable/gamepack_stripe" />
+
+        <TextView
+            android:id="@+id/GPMenuTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/gamepack_text"
+            android:textSize="22sp"
+            android:textStyle="bold|italic" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/gamepack_paused"
+            android:textColor="@color/gamepack_text_dim"
+            android:textSize="12sp"
+            android:letterSpacing="0.15"
+            android:textAllCaps="true" />
+    </LinearLayout>
+
+    <include layout="@layout/gamepack_controls_section" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/GPMenuResume"
+            style="@style/GamePackButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:text="@string/gamepack_resume" />
+
+        <Button
+            android:id="@+id/GPMenuExit"
+            style="@style/GamePackButton.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_marginStart="12dp"
+            android:text="@string/gamepack_exit" />
+    </LinearLayout>
+</LinearLayout>

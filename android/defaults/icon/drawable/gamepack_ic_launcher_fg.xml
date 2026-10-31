@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <!-- speed streaks -->
+    <path android:fillColor="#E10600" android:pathData="M22,40h18l-3,5h-18z" />
+    <path android:fillColor="#E10600" android:pathData="M18,50h20l-3,5h-20z" />
+    <path android:fillColor="#E10600" android:pathData="M24,60h14l-3,5h-14z" />
+    <!-- flag pole -->
+    <path android:fillColor="#FFFFFF" android:pathData="M42,30h3l-10,52h-3z" />
+    <!-- flag -->
+    <path android:fillColor="#33FFFFFF" android:pathData="M38.0,62.0h28l6,-28h-28z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M44.0,34.0h7v7h-7zM58.0,34.0h7v7h-7zM49.5,41.0h7v7h-7zM63.5,41.0h7v7h-7zM41.0,48.0h7v7h-7zM55.0,48.0h7v7h-7zM46.5,55.0h7v7h-7zM60.5,55.0h7v7h-7z" />
+</vector>

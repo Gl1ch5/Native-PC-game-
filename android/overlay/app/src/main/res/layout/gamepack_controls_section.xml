@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        style="@style/GamePackSection"
+        android:text="@string/gamepack_controls" />
+
+    <RadioGroup
+        android:id="@+id/GPControlsGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <RadioButton
+            android:id="@+id/GPControlsGamepad"
+            style="@style/GamePackOption"
+            android:text="@string/gamepack_controls_gamepad" />
+
+        <RadioButton
+            android:id="@+id/GPControlsTouch"
+            style="@style/GamePackOption"
+            android:text="@string/gamepack_controls_touch" />
+
+        <RadioButton
+            android:id="@+id/GPControlsTilt"
+            style="@style/GamePackOption"
+            android:text="@string/gamepack_controls_tilt" />
+
+        <RadioButton
+            android:id="@+id/GPControlsKeyboard"
+            style="@style/GamePackOption"
+            android:text="@string/gamepack_controls_keyboard" />
+    </RadioGroup>
+
+    <LinearLayout
+        android:id="@+id/GPTiltSection"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/gamepack_tilt_sensitivity"
+            android:textColor="@color/gamepack_text_dim"
+            android:textSize="13sp" />
+
+        <SeekBar
+            android:id="@+id/GPTiltSensitivity"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:progressTint="@color/gamepack_accent"
+            android:thumbTint="@color/gamepack_accent" />
+
+        <Button
+            android:id="@+id/GPTiltCalibrate"
+            style="@style/GamePackButton.Secondary"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:textSize="12sp"
+            android:text="@string/gamepack_tilt_calibrate" />
+    </LinearLayout>
+</LinearLayout>

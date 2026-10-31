@@ -1,0 +1,117 @@
+name: Build APK
+
+on:
+  push:
+    paths: ["android/**", "games/**", ".github/workflows/build-apk.yml"]
+  pull_request:
+    paths: ["android/**", "games/**", ".github/workflows/build-apk.yml"]
+  workflow_dispatch:
+    inputs:
+      cmod_apk_url:
+        description: "Winlator Cmod APK to take imagefs/proton from (empty = newest release)"
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-apk-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        game: [f1-2012]
+    env:
+      WORK: build/${{ matrix.game }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: android-actions/setup-android@v3
+
+      - name: Install NDK and CMake
+        run: sdkmanager "ndk;27.0.12077973" "cmake;3.22.1" "platforms;android-34" "build-tools;34.0.0"
+
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ hashFiles('android/UPSTREAM.env') }}
+
+      - name: Prepare project
+        run: android/prepare.sh "${{ matrix.game }}" "$WORK"
+
+      - name: Fetch system image from Winlator Cmod release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: android/fetch-system-assets.sh "$WORK" "${{ github.event.inputs.cmod_apk_url }}"
+
+      # A stable signing key lets Nightly builds install over each other.
+      # Secret = base64 of a keystore with alias "androiddebugkey", passwords "android" (see README).
+      - name: Signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_DEBUG_KEYSTORE_B64 }}
+        run: |
+          mkdir -p ~/.android
+          if [ -n "$KEYSTORE_B64" ]; then
+            echo "$KEYSTORE_B64" | base64 -d > ~/.android/debug.keystore
+          else
+            echo "::warning::ANDROID_DEBUG_KEYSTORE_B64 is not set: this APK will not update over the previous one"
+          fi
+
+      - name: Build
+        working-directory: ${{ env.WORK }}
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > local.properties
+          chmod +x gradlew
+          ./gradlew --no-daemon assembleDebug
+
+      - name: Collect APK
+        id: apk
+        run: |
+          apk="$(find "$WORK/app/build/outputs/apk/debug" -name '*.apk' | head -n1)"
+          out="${{ matrix.game }}-nightly.apk"
+          cp "$apk" "$out"
+          echo "file=$out" >> "$GITHUB_OUTPUT"
+          ls -la "$out"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.game }}-apk
+          path: ${{ steps.apk.outputs.file }}
+
+  nightly:
+    needs: build
+    # Nightly follows the default branch.
+    if: github.event_name != 'pull_request' && github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          path: dist
+          merge-multiple: true
+
+      - name: Publish Nightly release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="Автоматическая сборка из ${GITHUB_SHA::7} ($(date -u +'%Y-%m-%d %H:%M UTC')).
+
+          Установка: скачайте APK для своей игры, откройте его на телефоне и разрешите установку из этого источника.
+          Перед установкой удалите Winlator Cmod, если он стоит: у приложений одно имя пакета."
+          # Move the tag to this commit and replace the assets.
+          gh release delete nightly --yes --cleanup-tag || true
+          gh release create nightly dist/*.apk --prerelease --title "Nightly" --notes "$notes" --target "$GITHUB_SHA"
