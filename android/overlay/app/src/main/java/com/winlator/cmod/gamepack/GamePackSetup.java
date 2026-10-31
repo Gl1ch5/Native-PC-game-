@@ -6,6 +6,7 @@ import android.content.Intent;
 import com.winlator.cmod.XServerDisplayActivity;
 import com.winlator.cmod.container.Container;
 import com.winlator.cmod.container.ContainerManager;
+import com.winlator.cmod.contents.AdrenotoolsManager;
 import com.winlator.cmod.contents.ContentsManager;
 import com.winlator.cmod.core.Callback;
 import com.winlator.cmod.core.FileUtils;
@@ -162,7 +163,8 @@ public class GamePackSetup {
                 (controls == GameSettings.Controls.KEYBOARD ? "relativeMouseMovement=0\n" : "") +
                 (pack.execArgs.isEmpty() ? "" : "execArgs=" + pack.execArgs + "\n") +
                 (pack.cpuList.isEmpty() ? "" : "cpuList=" + pack.cpuList + "\n") +
-                (pack.box64Preset.isEmpty() ? "" : "box64Preset=" + pack.box64Preset + "\n");
+                (pack.box64Preset.isEmpty() ? "" : "box64Preset=" + pack.box64Preset + "\n") +
+                (isCustomDriverInstalled() ? "wrapperGraphicsDriverVersion=" + settings.getGpuDriver() + "\n" : "");
 
         container.setShowFPS(settings.isShowFps());
         container.saveData();
@@ -172,6 +174,15 @@ public class GamePackSetup {
         File shortcut = new File(desktopDir, pack.id + ".desktop");
         FileUtils.writeString(shortcut, content);
         return shortcut;
+    }
+
+    /** True when a custom driver is selected and still present (falls back to the system driver otherwise). */
+    private boolean isCustomDriverInstalled() {
+        String driver = settings.getGpuDriver();
+        if (driver.equals(GameSettings.SYSTEM_DRIVER)) return false;
+        if (new AdrenotoolsManager(context).enumarateInstalledDrivers().contains(driver)) return true;
+        settings.setGpuDriver(GameSettings.SYSTEM_DRIVER);
+        return false;
     }
 
     public Intent buildLaunchIntent(Container container, File shortcut) {

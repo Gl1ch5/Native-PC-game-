@@ -59,6 +59,12 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: android/fetch-system-assets.sh "$WORK" "${{ github.event.inputs.cmod_apk_url }}"
 
+      - name: Set package id
+        run: |
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install --quiet zstandard
+          "$RUNNER_TEMP/venv/bin/python" android/rebrand.py "$WORK" "$(jq -r .packageId "games/${{ matrix.game }}/gamepack.json")"
+
       # A stable signing key lets Nightly builds install over each other.
       # Secret = base64 of a keystore with alias "androiddebugkey", passwords "android" (see README).
       - name: Signing key
@@ -112,8 +118,7 @@ jobs:
         run: |
           notes="Автоматическая сборка из ${GITHUB_SHA::7} ($(date -u +'%Y-%m-%d %H:%M UTC')).
 
-          Установка: скачайте APK для своей игры, откройте его на телефоне и разрешите установку из этого источника.
-          Перед установкой удалите Winlator Cmod, если он стоит: у приложений одно имя пакета."
+          Установка: скачайте APK для своей игры, откройте его на телефоне и разрешите установку из этого источника."
           # Move the tag to this commit and replace the assets.
           gh release delete nightly --yes --cleanup-tag || true
           gh release create nightly dist/*.apk --prerelease --title "Nightly" --notes "$notes" --target "$GITHUB_SHA"

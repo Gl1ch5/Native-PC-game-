@@ -10,12 +10,16 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.winlator.cmod.MainActivity;
 import com.winlator.cmod.R;
 import com.winlator.cmod.container.Container;
 import com.winlator.cmod.container.ContainerManager;
+import com.winlator.cmod.contents.AdrenotoolsManager;
+import com.winlator.cmod.core.Callback;
 
 import java.io.File;
 import java.util.concurrent.Executors;
@@ -35,6 +39,23 @@ public class GameLauncherActivity extends AppCompatActivity implements GamePackI
     private Button cancelButton;
     private boolean launching;
     private final Runnable autoStart = this::launchGame;
+    private Callback<String> driverCallback;
+    private final ActivityResultLauncher<String[]> driverPicker = registerForActivityResult(
+            new ActivityResultContracts.OpenDocument(), uri -> {
+                Callback<String> callback = driverCallback;
+                driverCallback = null;
+                if (uri == null || callback == null) return;
+                Executors.newSingleThreadExecutor().execute(() -> {
+                    String driverId = new AdrenotoolsManager(this).installDriver(uri);
+                    runOnUiThread(() -> callback.call(driverId));
+                });
+            });
+
+    /** Lets the player import an Adrenotools driver .zip; the callback gets its id, or "" on failure. */
+    public void pickDriverArchive(Callback<String> callback) {
+        driverCallback = callback;
+        driverPicker.launch(new String[]{"application/zip", "application/x-zip-compressed", "application/octet-stream"});
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

@@ -21,6 +21,7 @@ public class GameSettings {
         }
     }
 
+    public static final String SYSTEM_DRIVER = com.winlator.cmod.core.DefaultVersion.WRAPPER;
     private static final String PREFS = "gamepack_settings";
     private final SharedPreferences prefs;
 
@@ -77,6 +78,15 @@ public class GameSettings {
                 .putString("quality", quality.name())
                 .putBoolean("show_fps", showFps)
                 .apply();
+    }
+
+    /** Adrenotools driver id from an imported archive, or "System" for the phone's own Vulkan driver. */
+    public String getGpuDriver() {
+        return prefs.getString("gpu_driver", SYSTEM_DRIVER);
+    }
+
+    public void setGpuDriver(String driverId) {
+        prefs.edit().putString("gpu_driver", driverId).apply();
     }
 
     public int getContainerId() {

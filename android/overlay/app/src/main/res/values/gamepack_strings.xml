@@ -40,6 +40,12 @@
     <string name="gamepack_quality_eco">Экономия\n720p · 45 FPS</string>
     <string name="gamepack_quality_balanced">Баланс\n720p · 60 FPS</string>
     <string name="gamepack_quality_high">Качество\n1080p · 60 FPS</string>
+    <string name="gamepack_gpu_driver">Драйвер видеокарты</string>
+    <string name="gamepack_gpu_driver_system">Системный (рекомендуется)</string>
+    <string name="gamepack_gpu_driver_import">Из архива…</string>
+    <string name="gamepack_gpu_driver_hint">ZIP-архив драйвера Adrenotools (внутри meta.json и .so), например сборка Turnip.</string>
+    <string name="gamepack_gpu_driver_installed">Драйвер «%1$s» установлен</string>
+    <string name="gamepack_gpu_driver_failed">Не удалось установить: это не архив Adrenotools или такой драйвер уже есть</string>
     <string name="gamepack_show_fps">Показывать счётчик FPS</string>
 
     <string name="gamepack_paused">Пауза</string>

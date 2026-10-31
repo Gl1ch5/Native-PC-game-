@@ -1,12 +1,13 @@
 diff --git a/app/build.gradle b/app/build.gradle
-index f44dc6e..e08aa39 100644
+index f44dc6e..08c968f 100644
 --- a/app/build.gradle
 +++ b/app/build.gradle
-@@ -87,6 +87,7 @@ dependencies {
+@@ -87,6 +87,8 @@ dependencies {
      implementation 'com.github.luben:zstd-jni:1.5.2-3@aar'
      implementation 'org.tukaani:xz:1.7'
      implementation 'org.apache.commons:commons-compress:1.20'
-+    implementation 'com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.03'
++    // RAR/7z extraction for game packs; its own deps (newer appcompat/Kotlin) clash with the app's
++    implementation('com.github.omicronapps:7-Zip-JBinding-4Android:Release-16.02-2.03') { transitive = false }
      implementation 'androidx.activity:activity-ktx:1.4.0'
      implementation 'androidx.fragment:fragment-ktx:1.4.0'
      implementation files('libs/MidiSynth/MidiSynth.jar')

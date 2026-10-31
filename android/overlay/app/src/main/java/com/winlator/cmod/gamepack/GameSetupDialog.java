@@ -1,17 +1,23 @@
 package com.winlator.cmod.gamepack;
 
-import android.app.Activity;
 import android.app.Dialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.CompoundButton;
 import android.widget.RadioGroup;
 import android.widget.SeekBar;
+import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.winlator.cmod.R;
+import com.winlator.cmod.contents.AdrenotoolsManager;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** First-run / settings screen: controls layout, graphics preset, FPS counter. */
 public class GameSetupDialog {
@@ -66,7 +72,26 @@ public class GameSetupDialog {
         });
     }
 
-    public static void show(Activity activity, boolean firstRun, Runnable onDone) {
+    /** Fills the driver list: system driver first, then drivers imported from archives. */
+    private static List<String> bindDrivers(GameLauncherActivity activity, Spinner spinner, String selected) {
+        List<String> ids = new ArrayList<>();
+        List<String> labels = new ArrayList<>();
+        ids.add(GameSettings.SYSTEM_DRIVER);
+        labels.add(activity.getString(R.string.gamepack_gpu_driver_system));
+        AdrenotoolsManager manager = new AdrenotoolsManager(activity);
+        for (String id : manager.enumarateInstalledDrivers()) {
+            ids.add(id);
+            String version = manager.getDriverVersion(id);
+            labels.add(version.isEmpty() ? id : id + " (" + version + ")");
+        }
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(activity, android.R.layout.simple_spinner_item, labels);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinner.setAdapter(adapter);
+        spinner.setSelection(Math.max(0, ids.indexOf(selected)));
+        return ids;
+    }
+
+    public static void show(GameLauncherActivity activity, boolean firstRun, Runnable onDone) {
         GameSettings settings = new GameSettings(activity);
         View view = LayoutInflater.from(activity).inflate(R.layout.gamepack_setup, null);
         Dialog dialog = new Dialog(activity, R.style.GamePackDialog);
@@ -89,12 +114,25 @@ public class GameSetupDialog {
         view.findViewById(R.id.GPTiltCalibrate).setVisibility(View.GONE); // calibrated in-game from the pause menu
         bindTiltSensitivity(sensitivity, settings);
 
+        Spinner driverSpinner = view.findViewById(R.id.GPDriverSpinner);
+        final List<String>[] driverIds = new List[]{bindDrivers(activity, driverSpinner, settings.getGpuDriver())};
+        view.findViewById(R.id.GPDriverImport).setOnClickListener(v -> activity.pickDriverArchive(driverId -> {
+            if (driverId == null || driverId.isEmpty()) {
+                Toast.makeText(activity, R.string.gamepack_gpu_driver_failed, Toast.LENGTH_LONG).show();
+                return;
+            }
+            Toast.makeText(activity, activity.getString(R.string.gamepack_gpu_driver_installed, driverId), Toast.LENGTH_SHORT).show();
+            driverIds[0] = bindDrivers(activity, driverSpinner, driverId);
+        }));
+
         controlsGroup.setOnCheckedChangeListener((group, checkedId) ->
                 tiltSection.setVisibility(idToControls(checkedId) == GameSettings.Controls.TILT ? View.VISIBLE : View.GONE));
 
         view.findViewById(R.id.GPSetupDone).setOnClickListener(v -> {
             settings.save(idToControls(controlsGroup.getCheckedRadioButtonId()),
                     idToQuality(qualityGroup.getCheckedRadioButtonId()), showFps.isChecked());
+            int driverIndex = driverSpinner.getSelectedItemPosition();
+            settings.setGpuDriver(driverIndex > 0 && driverIndex < driverIds[0].size() ? driverIds[0].get(driverIndex) : GameSettings.SYSTEM_DRIVER);
             dialog.dismiss();
             if (onDone != null) onDone.run();
         });
