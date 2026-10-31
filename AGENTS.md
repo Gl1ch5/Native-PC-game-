@@ -25,7 +25,7 @@ pinned in `android/UPSTREAM.env`, then patched and overlaid.
 ## Launcher flow (`android/overlay/.../gamepack`)
 
 - `GameLauncherActivity`: the only LAUNCHER activity. Runs first-run setup (`GameSetupDialog`), starts the installer, auto-starts the game once installed.
-- `GamePackInstallService`: foreground service. System image (`ImageFsInstaller.installFromAssetsBlocking`), container, download (`GamePackDownloader`: resume, Yandex.Disk public links), optional sha256, extraction (`GamePackExtractor`: RAR4/RAR5/7z/zip via 7-Zip-JBinding-4Android, tar.zst/xz via commons-compress). Progress goes to listeners and to the notification.
+- `GamePackInstallService`: foreground service. System image (`ImageFsInstaller.installFromAssetsBlocking`), container, download (`GamePackDownloader`: resume, Yandex.Disk and Cloud Mail.ru public links), optional sha256, extraction (`GamePackExtractor`: RAR4/RAR5/7z/zip via 7-Zip-JBinding-4Android, tar.zst/xz via commons-compress). Progress goes to listeners and to the notification.
 - `GamePackSetup`: creates the container, writes the `.desktop` shortcut from the current settings, builds the `XServerDisplayActivity` intent (launches the exe directly, no Wine desktop).
 - `GameOverlay` + `TiltSteering`: created by the patched `XServerDisplayActivity` when the shortcut has `gamepack=<id>`. Back opens the pause menu instead of the Winlator drawer. Tilt steering writes the left-stick X of the virtual-gamepad profile.
 

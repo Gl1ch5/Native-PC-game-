@@ -5,9 +5,9 @@
   "packageVersion": 1,
 
   "download": {
-    "comment": "Публичная ссылка Яндекс.Диска (disk.yandex.ru/d/... или yadi.sk/...) или прямая ссылка на файл. Многотомный архив: перечислите все части по порядку.",
+    "comment": "Публичная ссылка Облака Mail.ru (cloud.mail.ru/public/...), Яндекс.Диска (disk.yandex.ru/d/...) или прямая ссылка. Многотомный архив: все части по порядку. Размер f1-2012.rar: 4 666 367 551 байт.",
     "parts": [
-      { "url": "https://disk.yandex.ru/d/REPLACE_ME", "fileName": "F1_2012.rar", "sha256": "" }
+      { "url": "https://cloud.mail.ru/public/DNwp/98ZYy2AiD/f1-2012.rar", "fileName": "f1-2012.rar", "sha256": "" }
     ],
     "archivePassword": ""
   },

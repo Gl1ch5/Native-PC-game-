@@ -19,8 +19,8 @@ import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Downloads archive parts with resume support. Yandex.Disk public links
- * are resolved to a direct link through the public Yandex.Disk REST API.
+ * Downloads archive parts with resume support. Yandex.Disk and Cloud Mail.ru public links
+ * are resolved to a direct link through their public web APIs.
  */
 public class GamePackDownloader {
     public interface ProgressListener {
@@ -30,6 +30,7 @@ public class GamePackDownloader {
     private static final int BUFFER_SIZE = 256 * 1024;
     private static final int MAX_ATTEMPTS = 5;
     private static final String YANDEX_API = "https://cloud-api.yandex.net/v1/disk/public/resources/download?public_key=";
+    private static final String MAILRU_DISPATCHER = "https://cloud.mail.ru/api/v2/dispatcher/";
 
     private final AtomicBoolean cancelled;
 
@@ -44,13 +45,26 @@ public class GamePackDownloader {
         return host.equals("yadi.sk") || host.startsWith("disk.yandex.") || host.contains(".disk.yandex.");
     }
 
+    public static boolean isMailRuCloudLink(String url) {
+        Uri uri = Uri.parse(url);
+        String host = uri.getHost();
+        String path = uri.getPath();
+        return host != null && host.toLowerCase(Locale.ENGLISH).equals("cloud.mail.ru") && path != null && path.startsWith("/public/");
+    }
+
+    private String resolve(String url) throws IOException {
+        if (isYandexDiskLink(url)) return resolveYandexDiskLink(url);
+        if (isMailRuCloudLink(url)) return resolveMailRuCloudLink(url);
+        return url;
+    }
+
     public void download(String url, File outFile, ProgressListener listener) throws IOException {
         IOException lastError = null;
         for (int attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
             checkCancelled();
             try {
-                // Yandex direct links expire, so resolve them again on every attempt.
-                String directUrl = isYandexDiskLink(url) ? resolveYandexDiskLink(url) : url;
+                // Cloud direct links expire (Mail.ru tokens are single-use), so resolve them on every attempt.
+                String directUrl = resolve(url);
                 downloadOnce(directUrl, outFile, listener);
                 return;
             }
@@ -82,6 +96,35 @@ public class GamePackDownloader {
         }
         catch (org.json.JSONException e) {
             throw new IOException("Invalid Yandex.Disk API response", e);
+        }
+        finally {
+            connection.disconnect();
+        }
+    }
+
+    /**
+     * cloud.mail.ru/public/<weblink>: the dispatcher hands out a download node with a
+     * one-time token; the file is then served at <node>/<weblink>.
+     */
+    private String resolveMailRuCloudLink(String publicUrl) throws IOException {
+        String weblink = Uri.parse(publicUrl).getPath().substring("/public/".length());
+        StringBuilder encoded = new StringBuilder();
+        for (String segment : weblink.split("/")) {
+            if (segment.isEmpty()) continue;
+            if (encoded.length() > 0) encoded.append('/');
+            encoded.append(Uri.encode(segment));
+        }
+
+        HttpURLConnection connection = open(MAILRU_DISPATCHER);
+        try {
+            int code = connection.getResponseCode();
+            if (code != HttpURLConnection.HTTP_OK) throw new IOException("Cloud Mail.ru dispatcher HTTP " + code);
+            JSONObject body = new JSONObject(readAll(connection.getInputStream())).getJSONObject("body");
+            String node = body.getJSONArray("weblink_get").getJSONObject(0).getString("url");
+            return node + "/" + encoded;
+        }
+        catch (org.json.JSONException e) {
+            throw new IOException("Invalid Cloud Mail.ru response", e);
         }
         finally {
             connection.disconnect();
@@ -145,7 +188,7 @@ public class GamePackDownloader {
         connection.setInstanceFollowRedirects(true);
         connection.setConnectTimeout(20000);
         connection.setReadTimeout(60000);
-        connection.setRequestProperty("User-Agent", "GamePack-Launcher/1.0 (Android)");
+        connection.setRequestProperty("User-Agent", "Mozilla/5.0 (Linux; Android 14) GamePack-Launcher/1.0");
         return connection;
     }
 
