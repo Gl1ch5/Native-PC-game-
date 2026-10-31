@@ -137,7 +137,7 @@ public class GamePackSetup {
     /** Writes the .desktop shortcut from the current settings, so changes on the settings screen apply on the next start. */
     public File writeShortcut(Container container, String windowsExePath) {
         GameSettings.Quality quality = settings.getQuality();
-        GameSettings.Controls controls = settings.getControls();
+        GameSettings.Controls controls = settings.getControls(pack);
 
         int profileId = getProfileId(controls);
         String controlsProfile = profileId != 0 && installControlProfiles(context) ? String.valueOf(profileId) : "";

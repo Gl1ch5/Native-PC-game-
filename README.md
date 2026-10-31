@@ -40,11 +40,22 @@ Android-приложения, которые запускают ПК-игры к
 
 ## Как добавить или настроить игру
 
+Пошаговая инструкция для нового порта — **[docs/NEW_GAME.md](docs/NEW_GAME.md)**. Коротко:
+
+```bash
+python3 tools/new_game.py nfs-mw --title "Need for Speed: Most Wanted" --package com.gl1ch5.nfsmw \
+  --exe speed.exe --preset racing --url https://cloud.mail.ru/public/XXXX/YYYY/nfsmw.rar
+python3 tools/validate_games.py
+```
+
+Каждая папка в `games/` (кроме `_template`) после пуша становится отдельным APK в релизе Nightly.
+
 ```
 games/<id>/
   gamepack.json        название, ссылки на архив, exe, настройки контейнера
   controls_touch.icp   сенсорная раскладка
   controls_tilt.icp    раскладка для режима «гироскоп» (без стика)
+  NOTICE.md            условия правообладателя
   branding/            необязательно: background.jpg (фон, 16:9), icon.png (512×512)
 ```
 
@@ -57,7 +68,6 @@ games/<id>/
 - `install.dir` / `install.exe`: куда распаковать внутри `C:\` и какой exe запускать. Exe ищется по имени в любой подпапке архива.
 - `container`: версия Wine, DXVK, лимит кадров по умолчанию, переменные окружения.
 
-Чтобы игра собиралась в CI, добавьте её id в `matrix.game` в `.github/workflows/build-apk.yml`.
 
 ## Сборка
 

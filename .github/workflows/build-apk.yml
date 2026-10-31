@@ -2,9 +2,9 @@ name: Build APK
 
 on:
   push:
-    paths: ["android/**", "games/**", ".github/workflows/build-apk.yml"]
+    paths: ["android/**", "games/**", "tools/**", ".github/workflows/build-apk.yml"]
   pull_request:
-    paths: ["android/**", "games/**", ".github/workflows/build-apk.yml"]
+    paths: ["android/**", "games/**", "tools/**", ".github/workflows/build-apk.yml"]
   workflow_dispatch:
     inputs:
       cmod_apk_url:
@@ -20,12 +20,25 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Every valid folder in games/ (except _template) becomes one APK.
+  games:
+    runs-on: ubuntu-latest
+    outputs:
+      list: ${{ steps.list.outputs.list }}
+    steps:
+      - uses: actions/checkout@v5
+      - name: Validate game packs
+        id: list
+        run: echo "list=$(python3 tools/validate_games.py --list-json)" >> "$GITHUB_OUTPUT"
+
   build:
+    needs: games
+    if: needs.games.outputs.list != '[]'
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        game: [f1-2012]
+        game: ${{ fromJson(needs.games.outputs.list) }}
     env:
       WORK: build/${{ matrix.game }}
     steps:

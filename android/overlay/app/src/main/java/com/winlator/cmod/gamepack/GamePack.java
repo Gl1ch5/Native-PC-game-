@@ -51,6 +51,10 @@ public class GamePack {
     public final String box64Preset;
     public final String envVars;
 
+    /** Control modes offered to the player (GameSettings.Controls names) and the preselected one. */
+    public final List<String> controlModes = new ArrayList<>();
+    public final String defaultControls;
+
     private GamePack(JSONObject root) throws JSONException {
         id = root.getString("id");
         title = root.getString("title");
@@ -80,6 +84,21 @@ public class GamePack {
         cpuList = container.optString("cpuList", "");
         box64Preset = container.optString("box64Preset", "");
         envVars = container.optString("envVars", "");
+
+        JSONObject controls = root.optJSONObject("controls");
+        JSONArray modes = controls != null ? controls.optJSONArray("modes") : null;
+        if (modes != null) {
+            for (int i = 0; i < modes.length(); i++) controlModes.add(modes.getString(i).toUpperCase(java.util.Locale.ENGLISH));
+        }
+        else {
+            for (GameSettings.Controls mode : GameSettings.Controls.values()) controlModes.add(mode.name());
+        }
+        String fallback = controlModes.isEmpty() ? GameSettings.Controls.GAMEPAD.name() : controlModes.get(0);
+        defaultControls = controls != null ? controls.optString("default", fallback).toUpperCase(java.util.Locale.ENGLISH) : fallback;
+    }
+
+    public boolean allowsControls(GameSettings.Controls mode) {
+        return controlModes.contains(mode.name());
     }
 
     public static GamePack load(Context context) throws JSONException {

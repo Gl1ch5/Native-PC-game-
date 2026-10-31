@@ -16,6 +16,8 @@ import io
 import lzma
 import os
 import re
+import shutil
+import subprocess
 import sys
 import tarfile
 
@@ -62,24 +64,48 @@ def rewrite_tar(raw_tar, pairs):
     return (out.getvalue(), total) if total else (None, 0)
 
 
+def run_filter(cmd, data=None, path=None):
+    """Runs a (de)compressor CLI, feeding bytes or a file, returning stdout bytes."""
+    if path is not None:
+        with open(path, "rb") as f:
+            return subprocess.run(cmd, stdin=f, stdout=subprocess.PIPE, check=True).stdout
+    return subprocess.run(cmd, input=data, stdout=subprocess.PIPE, check=True).stdout
+
+
 def patch_archive(path, pairs):
+    """Rewrites a .txz/.tzst archive in place; uses multi-threaded xz/zstd CLIs when available."""
     if path.endswith((".txz", ".tar.xz")):
-        with lzma.open(path) as f:
-            raw = f.read()
+        if shutil.which("xz"):
+            raw = run_filter(["xz", "-dc", "-T0"], path=path)
+        else:
+            with lzma.open(path) as f:
+                raw = f.read()
         new, n = rewrite_tar(raw, pairs)
         if new is not None:
-            with lzma.open(path + ".tmp", "wb", preset=6) as f:
-                f.write(new)
+            if shutil.which("xz"):
+                packed = run_filter(["xz", "-c", "-6", "-T0"], data=new)
+            else:
+                packed = lzma.compress(new, preset=6)
+            with open(path + ".tmp", "wb") as f:
+                f.write(packed)
             os.replace(path + ".tmp", path)
         return n
     if path.endswith((".tzst", ".tar.zst")):
-        import zstandard
-        with open(path, "rb") as f:
-            raw = zstandard.ZstdDecompressor().stream_reader(f).read()
+        if shutil.which("zstd"):
+            raw = run_filter(["zstd", "-dc", "-q"], path=path)
+        else:
+            import zstandard
+            with open(path, "rb") as f:
+                raw = zstandard.ZstdDecompressor().stream_reader(f).read()
         new, n = rewrite_tar(raw, pairs)
         if new is not None:
+            if shutil.which("zstd"):
+                packed = run_filter(["zstd", "-c", "-q", "-12", "-T0"], data=new)
+            else:
+                import zstandard
+                packed = zstandard.ZstdCompressor(level=12, threads=-1).compress(new)
             with open(path + ".tmp", "wb") as f:
-                f.write(zstandard.ZstdCompressor(level=19, threads=-1).compress(new))
+                f.write(packed)
             os.replace(path + ".tmp", path)
         return n
     return None

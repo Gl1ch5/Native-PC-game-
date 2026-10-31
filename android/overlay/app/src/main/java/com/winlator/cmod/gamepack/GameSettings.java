@@ -37,6 +37,13 @@ public class GameSettings {
         return Controls.valueOf(prefs.getString("controls", Controls.GAMEPAD.name()));
     }
 
+    /** Current mode, or the game's default before the first-run screen was completed. */
+    public Controls getControls(GamePack pack) {
+        String fallback = pack.allowsControls(Controls.valueOf(pack.defaultControls)) ? pack.defaultControls : pack.controlModes.get(0);
+        Controls controls = Controls.valueOf(prefs.getString("controls", fallback));
+        return pack.allowsControls(controls) ? controls : Controls.valueOf(fallback);
+    }
+
     public Quality getQuality() {
         return Quality.valueOf(prefs.getString("quality", Quality.BALANCED.name()));
     }

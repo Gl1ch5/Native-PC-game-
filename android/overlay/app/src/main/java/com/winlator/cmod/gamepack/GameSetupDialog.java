@@ -40,6 +40,13 @@ public class GameSetupDialog {
         return GameSettings.Controls.GAMEPAD;
     }
 
+    /** Hides the control modes this game does not offer (see "controls.modes" in gamepack.json). */
+    public static void applyAllowedModes(View root, GamePack pack) {
+        for (GameSettings.Controls mode : GameSettings.Controls.values()) {
+            root.findViewById(controlsToId(mode)).setVisibility(pack.allowsControls(mode) ? View.VISIBLE : View.GONE);
+        }
+    }
+
     private static int qualityToId(GameSettings.Quality quality) {
         switch (quality) {
             case ECO: return R.id.GPQualityEco;
@@ -107,10 +114,19 @@ public class GameSetupDialog {
         View tiltSection = view.findViewById(R.id.GPTiltSection);
         SeekBar sensitivity = view.findViewById(R.id.GPTiltSensitivity);
 
-        controlsGroup.check(controlsToId(settings.getControls()));
+        GamePack pack;
+        try {
+            pack = GamePack.load(activity);
+        }
+        catch (org.json.JSONException e) {
+            return;
+        }
+        GameSettings.Controls controls = settings.getControls(pack);
+        applyAllowedModes(view, pack);
+        controlsGroup.check(controlsToId(controls));
         qualityGroup.check(qualityToId(settings.getQuality()));
         showFps.setChecked(settings.isShowFps());
-        tiltSection.setVisibility(settings.getControls() == GameSettings.Controls.TILT ? View.VISIBLE : View.GONE);
+        tiltSection.setVisibility(controls == GameSettings.Controls.TILT ? View.VISIBLE : View.GONE);
         view.findViewById(R.id.GPTiltCalibrate).setVisibility(View.GONE); // calibrated in-game from the pause menu
         bindTiltSensitivity(sensitivity, settings);
 

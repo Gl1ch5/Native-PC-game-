@@ -20,8 +20,13 @@ pinned in `android/UPSTREAM.env`, then patched and overlaid.
 | `android/prepare.sh` | Builds the project tree for one game: fetch, patch, overlay, game config, branding. |
 | `android/rebrand.py` | Sets the per-game package id: sources, manifest authorities, prebuilt `.so` and the asset archives (same-length path replacement). |
 | `android/fetch-system-assets.sh` | Takes `imagefs.txz` and `proton-9.0-*.txz` from an official Cmod release APK (upstream keeps them out of git). |
+| `games/_template/` | Skeleton copied by `tools/new_game.py`. |
+| `tools/new_game.py` | Creates `games/<id>/` from the template with a control preset (racing / gamepad / keyboard). |
+| `tools/validate_games.py` | Validates all packs; `--list-json` feeds the CI build matrix. |
+| `android/defaults/controls/` | Shared touch/tilt layouts used by the presets. |
+| `docs/NEW_GAME.md` | Porting guide (Russian). The `new-game-port` skill in `.claude/skills/` follows it. |
 | `games/<id>/` | Per-game `gamepack.json`, touch/tilt control profiles (`.icp`), optional `branding/`, `NOTICE.md`. |
-| `.github/workflows/build-apk.yml` | Builds every game in `matrix.game`; on the default branch it republishes the `nightly` prerelease. |
+| `.github/workflows/build-apk.yml` | Builds every valid game folder (matrix from `validate_games.py`); on the default branch it republishes the `nightly` prerelease. |
 
 ## Launcher flow (`android/overlay/.../gamepack`)
 
@@ -32,6 +37,7 @@ pinned in `android/UPSTREAM.env`, then patched and overlaid.
 
 ## Rules
 
+- A new game is data only: a `games/<id>/` folder. Game-specific Java or patch changes are not allowed; add a generic `gamepack.json` option instead (read it in `GamePack`, check it in `tools/validate_games.py`, document it in `docs/NEW_GAME.md`).
 - Keep upstream edits in the patch minimal; put new logic in the overlay. When a patch stops applying, regenerate it against the pinned commit (`git diff` in a prepared tree, minus the overlay files).
 - Upstream files mix CRLF and LF. Preserve each file's line endings when editing (Python `open(..., newline='')`), or the patch turns into a whole-file rewrite. `.gitattributes` keeps `*.patch` byte-exact.
 - The Java namespace stays `com.winlator.cmod`; only the application id changes, through `android/rebrand.py` (run after `fetch-system-assets.sh`). The system image and prebuilt libraries hard-code `/data/data/com.winlator.cmod`, so `packageId` must be at most 17 characters: the path is replaced in place and padded with `/`.

@@ -1,0 +1,38 @@
+{
+  "id": "GAME_ID",
+  "title": "GAME_TITLE",
+  "packageId": "PACKAGE_ID",
+  "notice": "GAME_TITLE © правообладатель. Используется с разрешения, только в некоммерческих целях.",
+  "packageVersion": 1,
+
+  "download": {
+    "comment": "Публичная ссылка Облака Mail.ru (cloud.mail.ru/public/...), Яндекс.Диска (disk.yandex.ru/d/...) или прямая ссылка. Многотомный архив: все части по порядку.",
+    "parts": [
+      { "url": "DOWNLOAD_URL", "fileName": "ARCHIVE_NAME", "sha256": "" }
+    ],
+    "archivePassword": ""
+  },
+
+  "install": {
+    "dir": "Games\\GAME_DIR",
+    "exe": "GAME_EXE",
+    "execArgs": "",
+    "minFreeSpaceMb": 16000
+  },
+
+  "controls": {
+    "modes": ["TOUCH", "GAMEPAD", "KEYBOARD"],
+    "default": "TOUCH"
+  },
+
+  "container": {
+    "wineVersion": "proton-9.0-arm64ec",
+    "screenSize": "1280x720",
+    "frameRateLimit": 60,
+    "dxvkVersion": "2.4-gplasync",
+    "dxvkAsync": true,
+    "cpuList": "",
+    "box64Preset": "PERFORMANCE",
+    "envVars": "ZINK_DESCRIPTORS=lazy ZINK_DEBUG=compact MESA_SHADER_CACHE_DISABLE=false MESA_SHADER_CACHE_MAX_SIZE=512MB mesa_glthread=true WINEESYNC=1 TU_DEBUG=noconform,sysmem MANGOHUD=0 DXVK_HUD=0 WINEDEBUG=-all"
+  }
+}

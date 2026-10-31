@@ -20,6 +20,11 @@
     "minFreeSpaceMb": 16000
   },
 
+  "controls": {
+    "modes": ["TOUCH", "TILT", "GAMEPAD", "KEYBOARD"],
+    "default": "TOUCH"
+  },
+
   "container": {
     "wineVersion": "proton-9.0-arm64ec",
     "screenSize": "1280x720",

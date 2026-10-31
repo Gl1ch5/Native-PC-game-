@@ -60,7 +60,9 @@ public class GameOverlay {
         });
 
         try {
-            ((TextView)view.findViewById(R.id.GPMenuTitle)).setText(GamePack.load(activity).title);
+            GamePack pack = GamePack.load(activity);
+            ((TextView)view.findViewById(R.id.GPMenuTitle)).setText(pack.title);
+            GameSetupDialog.applyAllowedModes(view, pack);
         }
         catch (Exception ignored) {}
 
